@@ -23,6 +23,24 @@ pickups = [
     }
 ]
 
+drivers = [
+    {
+        'id': 1,
+        'name': u'Simon Funke',
+        'contact': u'00000',
+        'pickup_id': 2, 
+        'time': str(time(hour=8, minute=30))
+    },
+    {
+        'id': 2,
+        'name': u'Franz Viertel',
+        'contact': u'00000',
+        'pickup_id': 1, 
+        'time': str(time(hour=9, minute=30))
+    }
+]
+
+
 @app.route('/commutecalc/api/pickups', methods = ['GET'])
 def get_pickups():
     return jsonify( { 'pickups': pickups } )
@@ -34,20 +52,10 @@ def get_pickup(pickup_id):
         abort(404)
     return jsonify( { 'pickup': pickup[0] } )
 
-drivers = [
-    {
-        'id': 1,
-        'name': u'Simon Funke',
-        'pickup_id': 2, 
-        'time': str(time(hour=8, minute=30))
-    },
-    {
-        'id': 2,
-        'name': u'Franz Viertel',
-        'pickup_id': 1, 
-        'time': str(time(hour=9, minute=30))
-    }
-]
+@app.route('/commutecalc/api/pickups/<int:pickup_id>/drivers', methods = ['GET'])
+def get_pickup(pickup_id):
+    driver_list = filter(lambda t: t['pickup_id'] == pickup_id, drivers)
+    return jsonify( { 'drivers': driver_list } )
 
 @app.route('/commutecalc/api/drivers', methods = ['GET'])
 def get_drivers():
