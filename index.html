@@ -18,6 +18,7 @@
           ['Manly Beach', -33.80010128657071, 151.28747820854187, 2],
           ['Maroubra Beach', -33.950198, 151.259302, 1]
         ];
+        var locations_dists = [];
 
         var mapOptions = {
           center: new google.maps.LatLng(-33.92, 151.25),
@@ -40,25 +41,24 @@
         params += "&origins=" + mylocation.join(',') + "&destinations=" + dests_param.join('|');
 
         $.getJSON('http://maps.googleapis.com/maps/api/distancematrix/json?' + params, function(response) {
+                locations_dists.push('10km');
         });
 
-        function drawMarker(loc, text) {
+        function drawMarker(i, text) {
             // Draw markers
-            var marker, i;
+            var marker;
 
-            for (i = 0; i < locations.length; i++) {  
-                marker = new google.maps.Marker({
-                    position: new google.maps.LatLng(locations[i][1], locations[i][2]),
-                    map: map
-                });
+            marker = new google.maps.Marker({
+                position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+                map: map
+            });
 
-                google.maps.event.addListener(marker, 'click', (function(marker, i) {
-                return function() {
-                  infowindow.setContent(locations[i][0]);
-                  infowindow.open(map, marker);
-                }
-                })(marker, i));
+            google.maps.event.addListener(marker, 'click', (function(marker, i) {
+            return function() {
+              infowindow.setContent(locations[i][0]);
+              infowindow.open(map, marker);
             }
+            })(marker, i));
         }
 
 
