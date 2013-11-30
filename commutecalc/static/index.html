@@ -21,7 +21,7 @@
 
 
         var mapOptions = {
-          center: new google.maps.LatLng(-33.92, 151.25),
+          center: new google.maps.LatLng(59.913902, 10.752182),
           zoom: 12
         };
         var map = new google.maps.Map(document.getElementById("map-canvas"),
@@ -109,7 +109,6 @@
         }
 
         function updateAddress(address) {
-            address = "Clovelly Road, Clovelly, New South Wales, Australien";
             getLatLong(address, function(lat, lon) {
                 myLocation = [address, lat, lon];
                 computeDistanceToMarkers(myLocation);
@@ -128,7 +127,7 @@
   </head>
   <body>
   <form id='address_form'>
-    What is your home address? <input id='address_input' type="text" name="homeaddress", value="Clovelly Road, Clovelly, New South Wales, Australien", size=100><br>
+    What is your home address? <input id='address_input' type="text" name="homeaddress", value="Simula Research Laboratory, Oslo", size=100><br>
     <input type="submit" value="Search">
   </form>
 

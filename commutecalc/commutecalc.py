@@ -16,15 +16,15 @@ def index():
 pickups = [
     {
         'id': 1,
-        'name': u'Bondi Beach',
-        'lat': -33.890542,
-        'lon': 151.274856 
+        'name': u'Lysaker Stasjon',
+        'lat': 59.91278,
+        'lon': 10.63868 
     },
     {
         'id': 2,
-        'name': u'Coogee Beach',
-        'lat': -33.923036,
-        'lon': 151.259052 
+        'name': u'Statoil Skoyen',
+        'lat': 59.92237,
+        'lon': 10.67867   
     }
 ]
 
