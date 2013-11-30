@@ -1,0 +1,7 @@
+flake8
+Flask
+Flask-Script
+flask-mongoengine
+flask-security
+nose
+requests
