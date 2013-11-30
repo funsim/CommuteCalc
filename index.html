@@ -29,40 +29,64 @@
 
         var infowindow = new google.maps.InfoWindow();
 
-        // Compute distance from my location to all markers
-        var mylocation = [-33.91, 151.259302];
-
-        var dests_param = [];
-        $.each(locations, function(index, value) {
-                dests_param.push([value[1], value[2]].join(','));
-        });
-
-        var params = $.param({sensor: false, units: 'metric', option: 'transit' });
-        params += "&origins=" + mylocation.join(',') + "&destinations=" + dests_param.join('|');
-
-        $.getJSON('http://maps.googleapis.com/maps/api/distancematrix/json?' + params, function(response) {
-                locations_dists.push('10km');
-        });
-
-        function drawMarker(i, text) {
+        function drawMarkers(locations, color) {
             // Draw markers
             var marker;
+            color = typeof color !== 'undefined' ? color : 'red';
 
-            marker = new google.maps.Marker({
-                position: new google.maps.LatLng(locations[i][1], locations[i][2]),
-                map: map
-            });
+            for (var i = 0; i < locations.length; i++) {
+              marker = new google.maps.Marker({
+                  position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+                  map: map
+              });
+              iconFile = 'http://maps.google.com/mapfiles/ms/icons/' + color + '-dot.png'; 
+              marker.setIcon(iconFile) 
 
-            google.maps.event.addListener(marker, 'click', (function(marker, i) {
-            return function() {
-              infowindow.setContent(locations[i][0]);
-              infowindow.open(map, marker);
-            }
-            })(marker, i));
+              google.maps.event.addListener(marker, 'click', (function(marker, i) {
+              return function() {
+                infowindow.setContent(locations[i][0]);
+                infowindow.open(map, marker);
+              }
+              })(marker, i));
+            };
         }
 
+        // Compute distance from my location to all markers
+        var mylocation = ['My location', -33.91, 151.259302, 0];
+        drawMarkers([mylocation], 'blue');
 
-        
+        var destinationsArray = [];
+        $.each(locations, function(index, value) {
+                destinationsArray.push([value[1], value[2]].join());
+        });
+
+        var service = new google.maps.DistanceMatrixService();
+            service.getDistanceMatrix(
+              {
+                  origins: [[mylocation[1], mylocation[2]].join()], 
+                  destinations: destinationsArray,
+                  travelMode: google.maps.TravelMode.WALKING,
+                  unitSystem: google.maps.UnitSystem.METRIC,
+                  avoidHighways: false,
+                  avoidTolls: false
+              }, callback);
+
+        function callback(response, status) {
+            if (status != google.maps.DistanceMatrixStatus.OK) {
+                alert('Error was: ' + status);
+            } else {
+                var origins = response.originAddresses;
+                var destinations = response.destinationAddresses;
+
+                var results = response.rows[0].elements; // Get results for first origin (there is only one)
+                for (var i = 0; i < destinations.length; i++) {
+                  locations[i][0] += "<br>Distance: " + results[i].distance.text + "<br>Duration: " + results[i].duration.text;
+                }
+                drawMarkers(locations);
+
+            }
+        }
+
 
 
       }
