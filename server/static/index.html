@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map-canvas { height: 100% }
+    </style>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=true"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+      function initialize() {
+        var pickups; // An array containing all the pickups
+        var pickups_drivers; // An array containing all the drivers for each pickup point
+
+        $.getJSON( "/commutecalc/api/pickups", function( data ) {
+            // FIXME: This call needs to be finished before we can start searching for addresses.
+            pickups = data.pickups;
+        });
+
+
+        var mapOptions = {
+          center: new google.maps.LatLng(-33.92, 151.25),
+          zoom: 12
+        };
+        var map = new google.maps.Map(document.getElementById("map-canvas"),
+            mapOptions);
+
+        var infowindow = new google.maps.InfoWindow();
+
+        function drawMarkers(locations, color) {
+            // Locations must be a an array with entries: [text, lat, lon]
+            var marker;
+            color = typeof color !== 'undefined' ? color : 'red';
+
+            for (var i = 0; i < locations.length; i++) {
+              marker = new google.maps.Marker({
+                  position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+                  map: map
+              });
+              iconFile = 'http://maps.google.com/mapfiles/ms/icons/' + color + '-dot.png'; 
+              marker.setIcon(iconFile) 
+
+              google.maps.event.addListener(marker, 'click', (function(marker, i) {
+              return function() {
+                infowindow.setContent(locations[i][0]);
+                infowindow.open(map, marker);
+              }
+              })(marker, i));
+            };
+        }
+
+        // Compute distance from my location to all markers
+        function computeDistanceToMarkers(myLocation) {
+            var pickupsArray = [];
+            $.each(pickups, function(index, pickup) {
+                    pickupsArray.push([pickup.lat, pickup.lon].join());
+            });
+
+            var service = new google.maps.DistanceMatrixService();
+                service.getDistanceMatrix(
+                  {
+                      origins: [[myLocation[1], myLocation[2]].join()],
+                      destinations: pickupsArray,
+                      travelMode: google.maps.TravelMode.WALKING,
+                      unitSystem: google.maps.UnitSystem.METRIC,
+                      avoidHighways: false,
+                      avoidTolls: false
+                  }, callback);
+
+            function callback(response, status) {
+                if (status != google.maps.DistanceMatrixStatus.OK) {
+                    alert('Error was: ' + status);
+                } else {
+                    var origins = response.originAddresses;
+                    var destinations = response.destinationAddresses;
+
+                    var results = response.rows[0].elements; // Get results for first origin (there is only one)
+                    var pickupLocations = [];
+                    for (var i = 0; i < pickups.length; i++) {
+                        var title = "<br>Distance: " + results[i].distance.text;
+                        title += "<br>Duration: " + results[i].duration.text;
+
+                        title += "<br>Drivers:";
+                        $.each(pickups[i].drivers, function(index, driver) {
+                            title += "<br>" + driver.time + ", " + driver.name;
+                        });
+                        pickupLocations.push([title, pickups[i].lat, pickups[i].lon]);
+
+                    }
+                    drawMarkers(pickupLocations);
+                    drawMarkers([myLocation], 'blue');
+
+                }
+            }
+        }
+
+        function getLatLong(address, callback){
+           geocoder = new google.maps.Geocoder();
+
+           geocoder.geocode({'address': address}, function(results, status){
+               if (status == google.maps.GeocoderStatus.OK) {
+                   callback(results[0].geometry.location.lat(), results[0].geometry.location.lng());
+               } else {
+                   alert("Geocode was not successful for the following reason: " + status);
+               }
+            });
+        }
+
+        function updateAddress(address) {
+            address = "Clovelly Road, Clovelly, New South Wales, Australien";
+            getLatLong(address, function(lat, lon) {
+                myLocation = [address, lat, lon];
+                computeDistanceToMarkers(myLocation);
+            });
+        }
+
+        $("#address_form").submit(function( event ) {
+            address = $("#address_input")[0].value;
+            updateAddress(address);
+            event.preventDefault();
+        });
+
+      }
+      google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+  </head>
+  <body>
+  <form id='address_form'>
+    What is your home address? <input id='address_input' type="text" name="homeaddress", value="Clovelly Road, Clovelly, New South Wales, Australien", size=100><br>
+    <input type="submit" value="Search">
+  </form>
+
+    <div id="map-canvas"/>
+  </body>
+</html>
