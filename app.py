@@ -62,7 +62,7 @@ def get_pickup(pickup_id):
     return jsonify( { 'pickup': pickup[0] } )
 
 @app.route('/commutecalc/api/pickups/<int:pickup_id>/drivers', methods = ['GET'])
-def get_pickup(pickup_id):
+def get_pickup_drivers(pickup_id):
     driver_list = filter(lambda t: t['pickup_id'] == pickup_id, drivers)
     return jsonify( { 'drivers': driver_list } )
 
